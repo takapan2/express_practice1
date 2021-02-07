@@ -1,5 +1,3 @@
-const session =require('express-session');
-
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -11,6 +9,8 @@ var usersRouter = require('./routes/users');
 var helloRouter=require('./routes/hello');
 
 var app = express();
+
+const session =require('express-session');
 
 var session_opt={
   secret:'keyboard cat',
