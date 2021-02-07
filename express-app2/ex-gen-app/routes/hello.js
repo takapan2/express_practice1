@@ -7,7 +7,12 @@ const db=new sqlite3.Database('mydb.sqlite3');
 
 router.get('/',(req,res,next)=>{
     db.serialize(()=>{
-        db.all("select * from mydata",(err,rows)=>{
+        var rows="";
+        db.each("select * from mydata",(err,row)=>{
+            if(!err){
+                rows+="<tr><th>"+row.id+"</th><td>"+row.name+"</td><td></tr>";
+            }
+        },(err,row)=>{
             if(!err){
                 var data={
                     title:'Hello!',
@@ -15,8 +20,8 @@ router.get('/',(req,res,next)=>{
                 };
                 res.render('hello',data);
             }
-        })
-    })
+        });
+    });
 });
 
 module.exports=router;
