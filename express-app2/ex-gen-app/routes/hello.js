@@ -1,4 +1,5 @@
 const express=require('express');
+const { check, validationResult } = require('express-validator');
 const router=express.Router();
 
 const sqlite3=require('sqlite3');
@@ -27,20 +28,42 @@ router.get('/',(req,res,next)=>{
 router.get('/add',(req,res,next)=>{
     var data={
         title:'Hello/Add',
-        content:'新しいレコードを入力:'
+        content:'新しいレコードを入力:',
+        form:{name:'',mail:'',age:0},
     };
     res.render('hello/add',data);
 });
 
-router.post('/add',(req,res,next)=>{
-    const nm=req.body.name;
-    const ml=req.body.mail;
-    const ag=req.body.age;
+router.post('/add',[
+        check('name','NAMEは必ず入力してください。').notEmpty().escape(),
+        check('mail','MAILはメールアドレスを記入してください。').isEmail().escape(),
+        check('age','AGEは年齢（整数）を入力してください。').isInt(),
+    ],(req,res,next)=>{
+        const errors=validationResult(req);
 
-    db.serialize(()=>{
-        db.run('insert into mydata (name,mail,age) values (?,?,?)',nm,ml,ag);
-    });
-    res.redirect('/hello');
+        if(!errors.isEmpty()){
+            var result='<ul class=text-danger>';
+            var result_arr=errors.array();
+            for(var n in result_arr){
+                result+='<li>'+result_arr[n].msg+'</li>'
+            }
+            result +='</u>';
+            var data={
+                title:'Hello/Add',
+                content:result,
+                form:req.body,
+            };
+            res.render('hello/add',data);
+        }else{
+            const nm=req.body.name;
+            const ml=req.body.mail;
+            const ag=req.body.age;
+
+            db.serialize(()=>{
+                db.run('insert into mydata (name,mail,age) values (?,?,?)',nm,ml,ag);
+            });
+        res.redirect('/hello');
+        }
 });
 
 router.get('/show',(req,res,next)=>{
